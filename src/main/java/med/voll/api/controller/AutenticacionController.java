@@ -2,7 +2,10 @@ package med.voll.api.controller;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import med.voll.api.domain.infra.security.DatosJWTToken;
+import med.voll.api.domain.infra.security.TokenService;
 import med.voll.api.domain.usuario.DatosAutenticacionUsuario;
+import med.voll.api.domain.usuario.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,23 +27,47 @@ public class AutenticacionController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    /*
+    se llama al metodo generartoken, se llama nuestro TokenService
+    la clase que creanos no la spring, se debe inyectar
+     */
+    @Autowired
+    private TokenService tokenService;
+
+
 
     /*
     IMPORTANTE spring va pedir un AuthenticationManager por eso se crea
     el metodo en infra security que lo de
      */
+    /*
+    Cuarta clase importante se refactoriza
+    token => authToken (aunthencation token)
+    se agrega => var JWTtoken = tokenService.generarToken();
+    se quita build() a ok() para construir la respuesta y se
+    le pasa como parametro a oK() JWTtoken
 
-
-
+     */
     @PostMapping
     @Transactional
     public ResponseEntity autenticarUsuario(@RequestBody @Valid DatosAutenticacionUsuario datosAutenticacionUsuario ){
 
-        Authentication token =
+        Authentication authToken =
                 new UsernamePasswordAuthenticationToken(datosAutenticacionUsuario.login(),
                         datosAutenticacionUsuario.clave());
-        authenticationManager.authenticate(token);
-        return ResponseEntity.ok().build();
+        // cuarta clase se cambio
+       //    authenticationManager.authenticate(authToken);
+        var usuarioAutenticado =  authenticationManager.authenticate(authToken);
+        /* se agrego en la cuarta clase esto viene ath0 de la clase TokenService
+         getPrincipal() para obtener el objeto en esta caso de tipo Usauario
+         que el parametro que se le paso generarToken
+
+         se caste ya que usuarioAutenticado devuelve un Objeto tipo Objeto generico
+         y el parametro espera un objeto tipo Usuario se caste, que el objeto
+         devuelto de usuarioAutenticado.getPrincipal() es un objeto (Usuario)
+         de nuestra clase */
+        var JWTtoken = tokenService.generarToken((Usuario) usuarioAutenticado.getPrincipal());
+        return ResponseEntity.ok(new DatosJWTToken(JWTtoken) );
 
     }
 }
