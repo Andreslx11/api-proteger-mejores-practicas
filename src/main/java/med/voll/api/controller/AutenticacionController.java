@@ -1,6 +1,6 @@
 package med.voll.api.controller;
 
-import jakarta.transaction.Transactional;
+
 import jakarta.validation.Valid;
 import med.voll.api.domain.infra.security.DatosJWTToken;
 import med.voll.api.domain.infra.security.TokenService;
@@ -24,8 +24,14 @@ public class AutenticacionController {
     /*
     Esta clase para que se disapare se inicie el proceso de autenticacion
      */
-    @Autowired
-    private AuthenticationManager authenticationManager;
+//    @Autowired
+//    private AuthenticationManager authenticationManager;
+
+    private final AuthenticationManager authenticationManager;
+
+    public AutenticacionController(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
 
     /*
     se llama al metodo generartoken, se llama nuestro TokenService
@@ -49,7 +55,6 @@ public class AutenticacionController {
 
      */
     @PostMapping
-    @Transactional
     public ResponseEntity autenticarUsuario(@RequestBody @Valid DatosAutenticacionUsuario datosAutenticacionUsuario ){
 
         Authentication authToken =

@@ -234,4 +234,5 @@ public class MedicoController {
                         medico.getDireccion().getComplemento()));
         return ResponseEntity.ok(datosMedico);
     }
+
 }
